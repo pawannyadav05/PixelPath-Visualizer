@@ -1,0 +1,4 @@
+node_modules
+backend/*.o
+backend/bin
+.DS_Store

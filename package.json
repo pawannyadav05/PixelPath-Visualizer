@@ -1,0 +1,19 @@
+{
+  "name": "pixelpath-visualizer",
+  "version": "1.0.0",
+  "description": "Interactive graph traversal algorithm visualizer with C++ backend and web interface",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build-backend": "make -C backend"
+  },
+  "keywords": [
+    "pathfinding",
+    "visualizer",
+    "dsa",
+    "cpp",
+    "javascript"
+  ],
+  "author": "",
+  "license": "ISC"
+}
