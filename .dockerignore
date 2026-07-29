@@ -1,0 +1,7 @@
+node_modules
+backend/*.o
+backend/bin
+.git
+.gitignore
+.dockerignore
+Dockerfile
