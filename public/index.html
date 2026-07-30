@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixelPath Visualizer — Interactive Graph Traversal Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Controls -->
+    <aside class="sidebar">
+      <header class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">✦</span>
+          <h1>PixelPath</h1>
+        </div>
+        <p class="subtitle">Graph Traversal Visualizer</p>
+      </header>
+      <div class="control-groups">
+        <!-- Algorithm Selector -->
+        <section class="control-group">
+          <h2>1. SELECT ALGORITHM</h2>
+          <div class="select-wrapper">
+            <select id="algorithm-select">
+              <option value="AStar" selected>A* Search (Heuristic)</option>
+              <option value="Dijkstra">Dijkstra's Algorithm (Weighted)</option>
+              <option value="BFS">Breadth-First Search (BFS)</option>
+              <option value="DFS">Depth-First Search (DFS)</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Grid Editor Modes -->
+        <section class="control-group">
+          <h2>2. TOOLBOX MODE</h2>
+          <div class="tool-grid">
+            <button class="tool-btn active" id="tool-wall" data-tool="wall">
+              <span class="tool-indicator wall"></span> Wall
+            </button>
+            <button class="tool-btn" id="tool-weight" data-tool="weight">
+              <span class="tool-indicator weight"></span> Weight
+            </button>
+            <button class="tool-btn" id="tool-start" data-tool="start">
+              <span class="tool-indicator start"></span> Start Node
+            </button>
+            <button class="tool-btn" id="tool-end" data-tool="end">
+              <span class="tool-indicator end"></span> Target Node
+            </button>
+          </div>
+          
+          <div class="weight-config-container hidden" id="weight-slider-container">
+            <label for="weight-value-slider">Weight Value: <span id="weight-display-val">5</span></label>
+            <input type="range" id="weight-value-slider" min="2" max="15" value="5">
+          </div>
+        </section>
+
+        <!-- Playback Controls -->
+        <section class="control-group">
+          <h2>3. ANIMATION CONTROLS</h2>
+          <div class="playback-controls">
+            <button id="btn-play" class="btn btn-primary" title="Execute pathfinding">
+              <span class="icon">▶</span> Solve
+            </button>
+            <button id="btn-pause" class="btn btn-secondary" title="Pause visualization" disabled>
+              <span class="icon">⏸</span> Pause
+            </button>
+            <button id="btn-step" class="btn btn-secondary" title="Step forward 1 frame" disabled>
+              <span class="icon">⏭</span> Step
+            </button>
+          </div>
+
+          <div class="speed-slider-container">
+            <label for="speed-slider">Draw Speed: <span id="speed-label">Fast</span></label>
+            <input type="range" id="speed-slider" min="1" max="100" value="75">
+          </div>
+        </section>
+
+        <!-- Grid Cleanup / Generation -->
+        <section class="control-group">
+          <h2>4. OPERATIONS</h2>
+          <div class="action-grid">
+            <button id="btn-clear-path" class="btn btn-tertiary">Clear Path</button>
+            <button id="btn-clear-walls" class="btn btn-tertiary">Clear Walls</button>
+            <button id="btn-clear-weights" class="btn btn-tertiary">Clear Weights</button>
+            <button id="btn-reset" class="btn btn-danger">Reset Grid</button>
+          </div>
+          
+          <div class="generator-group">
+            <button id="btn-generate-maze" class="btn btn-glow">Generate Random Maze</button>
+          </div>
+        </section>
+
+        <!-- Benchmark Trigger -->
+        <section class="control-group">
+          <h2>5. BENCHMARK COMPARATOR</h2>
+          <button id="btn-benchmark" class="btn btn-benchmark">Run All Algorithms</button>
+        </section>
+      </div>
+
+      <!-- Benchmark Summary Panel -->
+      <div id="benchmark-panel" class="benchmark-panel hidden">
+        <h3>Benchmark Standings</h3>
+        <div class="benchmark-table-wrapper">
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Time</th>
+                <th>Visits</th>
+                <th>Cost</th>
+              </tr>
+            </thead>
+            <tbody id="benchmark-results-body">
+              <!-- Filled via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <button id="btn-close-benchmark" class="btn btn-text">Dismiss Results</button>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Top Metrics Dashboard -->
+      <header class="dashboard">
+        <div class="metric-card">
+          <span class="metric-label">Execution Time (C++)</span>
+          <span class="metric-value" id="metric-time">0.00 ms</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Visited Cells</span>
+          <span class="metric-value" id="metric-visited">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Path Length</span>
+          <span class="metric-value" id="metric-length">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Total Path Cost</span>
+          <span class="metric-value" id="metric-cost">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Status</span>
+          <span class="metric-value status-idle" id="metric-status">Ready</span>
+        </div>
+      </header>
+
+      <!-- Grid Canvas Workspace -->
+      <div class="canvas-container" id="canvas-container">
+        <canvas id="grid-canvas"></canvas>
+      </div>
+
+      <!-- Bottom Interactive Legend -->
+      <footer class="legend">
+        <div class="legend-item">
+          <div class="legend-box start-box">✦</div>
+          <span>Start</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box end-box">✕</div>
+          <span>Target</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box wall-box"></div>
+          <span>Wall</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box weight-box">w</div>
+          <span>Weighted Cell</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box frontier-box"></div>
+          <span>Frontier</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box visited-box"></div>
+          <span>Visited</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box path-box"></div>
+          <span>Shortest Path</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
