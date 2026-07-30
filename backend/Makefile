@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 CXXFLAGS = -std=c++17 -O3 -Wall -Wextra
 
 SRCS = Grid.cpp Algorithms.cpp main.cpp
